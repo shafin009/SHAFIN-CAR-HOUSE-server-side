@@ -22,6 +22,8 @@ async function run() {
 
         await client.connect();
         const toolsCollection = client.db("shafin-car").collection("tools");
+        const reviewCollection = client.db("shafin-car").collection("review");
+
 
         app.get("/tools", async (req, res) => {
             const query = {};
@@ -44,12 +46,19 @@ async function run() {
             res.send(result);
         });
 
-        app.get("/tools/:id", async (req, res) => {
+        app.get("/order/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const tools = await toolsCollection.findOne(query);
             res.send(tools);
 
+
+        });
+
+        app.post("/review", async (req, res) => {
+            const newReview = req.body;
+            const result = await reviewCollection.insertOne(newReview);
+            res.send(result);
         });
 
 
