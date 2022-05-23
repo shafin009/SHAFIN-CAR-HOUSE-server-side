@@ -44,7 +44,13 @@ async function run() {
             res.send(result);
         });
 
+        app.get("/tools/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const tools = await toolsCollection.findOne(query);
+            res.send(tools);
 
+        });
 
 
     } finally { }
