@@ -38,6 +38,12 @@ async function run() {
 
         });
 
+        app.post("/order", async (req, res) => {
+            const newitems = req.body;
+            const result = await toolsCollection.insertOne(newitems);
+            res.send(result);
+        });
+
 
 
 
