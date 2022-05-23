@@ -24,7 +24,6 @@ async function run() {
         const toolsCollection = client.db("shafin-car").collection("tools");
 
         app.get("/tools", async (req, res) => {
-
             const query = {};
             const cursor = toolsCollection.find(query);
             const tools = await cursor.toArray();
