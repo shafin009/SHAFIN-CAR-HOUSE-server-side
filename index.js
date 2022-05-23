@@ -22,7 +22,7 @@ async function run() {
 
         await client.connect();
         const toolsCollection = client.db("shafin-car").collection("tools");
-        const reviewCollection = client.db("shafin-car").collection("review");
+        const reviewsCollection = client.db("shafin-car").collection("review");
 
 
         app.get("/tools", async (req, res) => {
@@ -55,9 +55,18 @@ async function run() {
 
         });
 
+        app.get("/review", async (req, res) => {
+            const query = {};
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+
+
+        });
+
         app.post("/review", async (req, res) => {
             const newReview = req.body;
-            const result = await reviewCollection.insertOne(newReview);
+            const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         });
 
