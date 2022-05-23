@@ -1,9 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-
 const { ObjectId } = require('mongodb');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+var MongoClient = require('mongodb').MongoClient;
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -12,8 +11,9 @@ app.use(cors());
 app.use(express.json());
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@assignment-12.sva2y.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+var uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@assignment-12-shard-00-00.sva2y.mongodb.net:27017,assignment-12-shard-00-01.sva2y.mongodb.net:27017,assignment-12-shard-00-02.sva2y.mongodb.net:27017/?ssl=true&replicaSet=atlas-65b2xi-shard-0&authSource=admin&retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri);
 
 
 async function run() {
