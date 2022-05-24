@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
+const { process_params } = require('express/lib/router');
 const app = express();
 var MongoClient = require('mongodb').MongoClient;
 require('dotenv').config();
@@ -84,7 +85,6 @@ async function run() {
         app.get("/order/:id", async (req, res) => {
             const id = req.params.id;
             const query = { pid: id };
-            console.log(query);
 
             const tools = await orderCollection.findOne(query);
             res.send(tools);
@@ -104,6 +104,15 @@ async function run() {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
+        });
+
+        app.get("/order", async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const items = await orderCollection.find(query).toArray()
+            res.send(items)
+
+
         });
 
 
