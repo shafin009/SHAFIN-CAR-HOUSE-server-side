@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
 const app = express();
 var MongoClient = require('mongodb').MongoClient;
@@ -15,6 +16,22 @@ var uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@assignment-12
 
 const client = new MongoClient(uri);
 
+// function token(req, res, next) {
+//     const headerAuth = req.headers.authorization;
+//     if (!headerAuth) {
+//         return res.status(401).send({ message: "Sorry! Access Denied" });
+//     }
+//     const jwtToken = headerAuth.split(' ')[1];
+//     jsonWeb.verify(jwtToken, process.env.JWT_TOKEN, (err, decoded) => {
+
+//         if (err) {
+//             return res.status(403).send({ message: "Sorry! Forbidden Access" });
+//         }
+//         req.decoded = decoded;
+//         next()
+//     })
+
+// }
 
 async function run() {
 
@@ -42,7 +59,7 @@ async function run() {
 
         });
 
-        app.put("/user/:email", async (req, res) => {
+        app.put("/users/:email", async (req, res) => {
             const email = req.params.email;
             const user = req.body;
             const filter = { email: email };
@@ -51,10 +68,12 @@ async function run() {
                 $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
-            res.send(result);
+            const token = jwt.sign({ email: email }, process.env.JWT_TOKEN, { expiresIn: '5h' })
+
+            res.send({ result, token });
 
 
-        })
+        });
 
         app.post("/order", async (req, res) => {
             const newItems = req.body;
@@ -64,7 +83,7 @@ async function run() {
 
         app.get("/order/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { pid:id };
+            const query = { pid: id };
             console.log(query);
 
             const tools = await orderCollection.findOne(query);
