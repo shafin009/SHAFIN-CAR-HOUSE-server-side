@@ -23,6 +23,8 @@ async function run() {
         await client.connect();
         const toolsCollection = client.db("shafin-car").collection("tools");
         const reviewsCollection = client.db("shafin-car").collection("review");
+        const userCollection = client.db("shafin-car").collection("users");
+        const orderCollection = client.db("shafin-car").collection("order");
 
 
         app.get("/tools", async (req, res) => {
@@ -40,18 +42,33 @@ async function run() {
 
         });
 
+        app.put("/user/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+
+
+        })
+
         app.post("/order", async (req, res) => {
-            const newitems = req.body;
-            const result = await toolsCollection.insertOne(newitems);
+            const newItems = req.body;
+            const result = await orderCollection.insertOne(newItems);
             res.send(result);
         });
 
         app.get("/order/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const tools = await toolsCollection.findOne(query);
-            res.send(tools);
+            const query = { pid:id };
+            console.log(query);
 
+            const tools = await orderCollection.findOne(query);
+            res.send(tools);
 
         });
 
@@ -69,6 +86,9 @@ async function run() {
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         });
+
+
+
 
 
     } finally { }
