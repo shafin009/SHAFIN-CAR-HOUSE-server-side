@@ -59,8 +59,16 @@ async function run() {
             res.send(tools);
 
         });
+        
+        app.get("/admin/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdminRole = user.role === 'admin';
+            res.send({ admin: isAdminRole });
 
-        app.get("/users", tokenJson, async (req, res) => {
+        });
+
+        app.get("/users", async (req, res) => {
             const users = await userCollection.find().toArray()
             res.send(users);
 
@@ -86,13 +94,22 @@ async function run() {
 
         app.put("/users/admin/:email", tokenJson, async (req, res) => {
             const email = req.params.email;
-            const filter = { email: email };
+            const requestEmail = req.decoded.email;
 
-            const updateDoc = {
-                $set: { role: 'admin' },
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
+            const requestPerson = await userCollection.findOne({ email: requestEmail })
+
+            if (requestPerson.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                res.status(403).send({ message: "Sorry!! You Can't Access " });
+            }
+
 
 
         });
