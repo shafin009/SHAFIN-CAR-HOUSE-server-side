@@ -17,22 +17,22 @@ var uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@assignment-12
 
 const client = new MongoClient(uri);
 
-// function token(req, res, next) {
-//     const headerAuth = req.headers.authorization;
-//     if (!headerAuth) {
-//         return res.status(401).send({ message: "Sorry! Access Denied" });
-//     }
-//     const jwtToken = headerAuth.split(' ')[1];
-//     jsonWeb.verify(jwtToken, process.env.JWT_TOKEN, (err, decoded) => {
+function tokenJson(req, res, next) {
+    const headerAuth = req.headers.authorization;
+    if (!headerAuth) {
+        return res.status(401).send({ message: "Sorry! Access Denied" });
+    }
+    const jwtToken = headerAuth.split(' ')[1];
+    jwt.verify(jwtToken, process.env.JWT_TOKEN, (err, decoded) => {
 
-//         if (err) {
-//             return res.status(403).send({ message: "Sorry! Forbidden Access" });
-//         }
-//         req.decoded = decoded;
-//         next()
-//     })
+        if (err) {
+            return res.status(403).send({ message: "Sorry! Forbidden Access" });
+        }
+        req.decoded = decoded;
+        next()
+    })
 
-// }
+}
 
 async function run() {
 
@@ -60,6 +60,13 @@ async function run() {
 
         });
 
+        app.get("/users", tokenJson, async (req, res) => {
+            const users = await userCollection.find().toArray()
+            res.send(users);
+
+        });
+
+
         app.put("/users/:email", async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -72,6 +79,20 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.JWT_TOKEN, { expiresIn: '5h' })
 
             res.send({ result, token });
+
+
+        });
+
+
+        app.put("/users/admin/:email", tokenJson, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+
+            const updateDoc = {
+                $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
 
 
         });
@@ -106,11 +127,17 @@ async function run() {
             res.send(result);
         });
 
-        app.get("/order", async (req, res) => {
-            const email = req.query.email
-            const query = { email: email }
-            const items = await orderCollection.find(query).toArray()
-            res.send(items)
+        app.get("/order", tokenJson, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email === decodedEmail) {
+                const query = { email: email }
+                const items = await orderCollection.find(query).toArray()
+                return res.send(items)
+            }
+            else {
+                return res.status(401).send({ message: "Sorry! Can't Access " });
+            }
 
 
         });
