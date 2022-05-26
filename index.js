@@ -68,7 +68,7 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
-            
+
         });
         app.post("/tools", async (req, res) => {
             const items = req.body;
@@ -87,6 +87,14 @@ async function run() {
         app.get("/users", async (req, res) => {
             const users = await userCollection.find().toArray()
             res.send(users);
+
+        });
+
+        app.delete("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query);
+            res.send(result);
 
         });
 
