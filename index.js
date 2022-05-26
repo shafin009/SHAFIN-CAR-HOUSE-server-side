@@ -45,6 +45,7 @@ async function run() {
         const reviewsCollection = client.db("shafin-car").collection("review");
         const userCollection = client.db("shafin-car").collection("users");
         const orderCollection = client.db("shafin-car").collection("order");
+        const paymentCollection = client.db("shafin-car").collection("payments");
 
 
         app.get("/tools", async (req, res) => {
@@ -60,6 +61,19 @@ async function run() {
             const tools = await toolsCollection.findOne(query);
             res.send(tools);
 
+        });
+
+        app.delete("/tools/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(query);
+            res.send(result);
+            
+        });
+        app.post("/tools", async (req, res) => {
+            const items = req.body;
+            const result = await toolsCollection.insertOne(items);
+            res.send(result);
         });
 
         app.get("/admin/:email", async (req, res) => {
@@ -130,6 +144,34 @@ async function run() {
 
         });
 
+
+        app.get("/order/:email/:id", async (req, res) => {
+            const email = req.params.email;
+            const pid = req.params.id;
+            const query = { email: email, pid: pid };
+            const order = await orderCollection.find(query).toArray();
+            res.send(order);
+        });
+
+        //     app.patch("/order/:email/:id", tokenJson, async (req, res) => {
+
+        //         const id = req.params.id;
+
+        //         const payment = req.body
+        //         const filter = { pid: id };
+
+        //         const updateDoc = {
+        //             $set: {
+        //                 paid: true,
+        //                 transId: payment.transId,
+
+        //             }
+        //         };
+        //     const collectingOrder = await orderCollection.updateOne(filter, updateDoc)
+        //     const result = await paymentCollection.insertOne(payment)
+        //     res.send(collectingOrder, result, updateDoc)
+        // });
+
         app.get("/review", async (req, res) => {
             const query = {};
             const cursor = reviewsCollection.find(query);
@@ -137,6 +179,23 @@ async function run() {
             res.send(reviews);
 
 
+        });
+
+        app.put("/order/:email/:id", async (req, res) => {
+            email = req.params.email;
+            const productId = req.params.id;
+            const payment = req.body;
+            const filter = { email: email, pid: payment.paymentId };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transId: payment.transId,
+                },
+            };
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await ordersCollection.updateOne(filter, updatedDoc);
+            console.log(updatedOrder);
+            res.send(updatedDoc);
         });
 
         app.post("/review", async (req, res) => {
@@ -159,7 +218,7 @@ async function run() {
 
 
         });
-        app.post("/create-payment-intent", async (req, res) => {
+        app.post("/create-payment-intent", tokenJson, async (req, res) => {
 
             const product = req.body
             const price = product.price
