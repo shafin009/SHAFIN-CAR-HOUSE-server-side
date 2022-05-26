@@ -151,34 +151,31 @@ async function run() {
             res.send(tools);
 
         });
+        app.delete("/order/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        });
 
+        app.patch("/admin/order/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: { Shipped: true },
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc);
 
-        app.get("/order/:email/:id", async (req, res) => {
-            const email = req.params.email;
-            const pid = req.params.id;
-            const query = { email: email, pid: pid };
+            res.send(result);
+        });
+
+        app.get("/order/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
             const order = await orderCollection.find(query).toArray();
             res.send(order);
         });
 
-        //     app.patch("/order/:email/:id", tokenJson, async (req, res) => {
-
-        //         const id = req.params.id;
-
-        //         const payment = req.body
-        //         const filter = { pid: id };
-
-        //         const updateDoc = {
-        //             $set: {
-        //                 paid: true,
-        //                 transId: payment.transId,
-
-        //             }
-        //         };
-        //     const collectingOrder = await orderCollection.updateOne(filter, updateDoc)
-        //     const result = await paymentCollection.insertOne(payment)
-        //     res.send(collectingOrder, result, updateDoc)
-        // });
 
         app.get("/review", async (req, res) => {
             const query = {};
@@ -190,10 +187,9 @@ async function run() {
         });
 
         app.put("/order/:email/:id", async (req, res) => {
-            email = req.params.email;
             const productId = req.params.id;
             const payment = req.body;
-            const filter = { email: email, pid: payment.paymentId };
+            const filter = { productId: payment.paymentId };
             const updatedDoc = {
                 $set: {
                     paid: true,
@@ -201,7 +197,7 @@ async function run() {
                 },
             };
             const result = await paymentCollection.insertOne(payment);
-            const updatedOrder = await ordersCollection.updateOne(filter, updatedDoc);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             console.log(updatedOrder);
             res.send(updatedDoc);
         });
@@ -259,12 +255,21 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('sss car site')
+    res.send('shafin car site')
 })
 
 app.listen(port, () => {
     console.log('running port', port)
 })
+
+
+
+
+
+
+
+
+
 
 
 
